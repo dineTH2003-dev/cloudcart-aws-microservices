@@ -10,7 +10,6 @@ export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test"
 export AWS_DEFAULT_REGION="$AWS_REGION"
 
-# Helper for awscli targeting localstack
 awslocal() {
     aws --endpoint-url="$AWS_ENDPOINT" --region="$AWS_REGION" "$@"
 }
@@ -45,34 +44,21 @@ echo "SNS Topic ARN: $TOPIC_ARN"
 
 echo "4. Creating SQS Dead Letter Queues"
 awslocal sqs create-queue --queue-name cloudcart-inventory-dlq || true
-INVENTORY_DLQ_ARN=$(awslocal sqs get-queue-attributes --queue-url "$AWS_ENDPOINT/000000000000/cloudcart-inventory-dlq" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
-
 awslocal sqs create-queue --queue-name cloudcart-notification-dlq || true
-NOTIF_DLQ_ARN=$(awslocal sqs get-queue-attributes --queue-url "$AWS_ENDPOINT/000000000000/cloudcart-notification-dlq" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
 
-echo "5. Creating SQS Queues with Redrive Policy (DLQ attached)"
-INVENTORY_REDRIVE_POLICY="{\"deadLetterTargetArn\":\"$INVENTORY_DLQ_ARN\",\"maxReceiveCount\":\"3\"}"
-awslocal sqs create-queue \
-    --queue-name cloudcart-inventory-queue \
-    --attributes "{\"RedrivePolicy\":$(echo $INVENTORY_REDRIVE_POLICY | jq -R .)}" || true
-
-NOTIF_REDRIVE_POLICY="{\"deadLetterTargetArn\":\"$NOTIF_DLQ_ARN\",\"maxReceiveCount\":\"3\"}"
-awslocal sqs create-queue \
-    --queue-name cloudcart-notification-queue \
-    --attributes "{\"RedrivePolicy\":$(echo $NOTIF_REDRIVE_POLICY | jq -R .)}" || true
-
-INVENTORY_QUEUE_ARN=$(awslocal sqs get-queue-attributes --queue-url "$AWS_ENDPOINT/000000000000/cloudcart-inventory-queue" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
-NOTIF_QUEUE_ARN=$(awslocal sqs get-queue-attributes --queue-url "$AWS_ENDPOINT/000000000000/cloudcart-notification-queue" --attribute-names QueueArn --query 'Attributes.QueueArn' --output text)
+echo "5. Creating SQS Queues"
+awslocal sqs create-queue --queue-name cloudcart-inventory-queue || true
+awslocal sqs create-queue --queue-name cloudcart-notification-queue || true
 
 echo "6. Subscribing SQS queues to SNS topic"
 awslocal sns subscribe \
     --topic-arn "$TOPIC_ARN" \
     --protocol sqs \
-    --notification-endpoint "$INVENTORY_QUEUE_ARN" || true
+    --notification-endpoint "arn:aws:sqs:$AWS_REGION:000000000000:cloudcart-inventory-queue" || true
 
 awslocal sns subscribe \
     --topic-arn "$TOPIC_ARN" \
     --protocol sqs \
-    --notification-endpoint "$NOTIF_QUEUE_ARN" || true
+    --notification-endpoint "arn:aws:sqs:$AWS_REGION:000000000000:cloudcart-notification-queue" || true
 
 echo "=== LocalStack Initialization Completed Successfully ==="

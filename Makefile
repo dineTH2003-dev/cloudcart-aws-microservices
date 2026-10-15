@@ -11,7 +11,7 @@ up: ## Start local platform (Postgres, LocalStack, and all 5 microservices + Fro
 	docker compose up -d
 	@echo "Waiting for services to become healthy..."
 	@sleep 8
-	@echo "CloudCart is live at http://localhost:3000"
+	@echo "CloudCart is live at http://localhost:3001"
 
 down: ## Stop all local platform containers
 	docker compose down

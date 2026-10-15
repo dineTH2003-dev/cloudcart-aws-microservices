@@ -1,4 +1,4 @@
-# Stage 1: Build TypeScript
+# Stage 1: Build TypeScript & prepare production dependencies
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -8,8 +8,9 @@ RUN npm ci
 
 COPY src ./src
 RUN npm run build
+RUN npm prune --production
 
-# Stage 2: Production Runtime
+# Stage 2: Lean Production Runtime
 FROM node:20-alpine AS runner
 
 WORKDIR /app
@@ -17,12 +18,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8001
 
-# Add non-root user
 USER node
 
-COPY package*.json ./
-RUN npm ci --only=production
-
+COPY --chown=node:node package*.json ./
+COPY --from=builder --chown=node:node /app/node_modules ./node_modules
 COPY --from=builder --chown=node:node /app/dist ./dist
 
 EXPOSE 8001

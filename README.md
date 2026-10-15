@@ -226,7 +226,7 @@ make up
 ```
 
 ### 2. Access the Application
-* **Storefront Web UI**: [http://localhost:3000](http://localhost:3000)
+* **Storefront Web UI**: [http://localhost:3001](http://localhost:3001)
 * **Product Service**: [http://localhost:8001/api/products](http://localhost:8001/api/products)
 * **User Service**: [http://localhost:8002/healthz](http://localhost:8002/healthz)
 * **Order Service**: [http://localhost:8003/healthz](http://localhost:8003/healthz)
