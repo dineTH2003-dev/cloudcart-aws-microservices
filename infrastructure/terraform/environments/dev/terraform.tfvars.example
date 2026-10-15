@@ -1,0 +1,4 @@
+aws_region  = "us-east-1"
+environment = "dev"
+name_prefix = "cloudcart"
+db_password = "ReplaceWithSecurePassword2026!"

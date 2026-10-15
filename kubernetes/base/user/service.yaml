@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+  namespace: cloudcart
+  labels:
+    app: user-service
+    app.kubernetes.io/name: user-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8002
+      targetPort: 8002
+      name: http
+  selector:
+    app: user-service

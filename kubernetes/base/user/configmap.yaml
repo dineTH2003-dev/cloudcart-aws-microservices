@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-config
+  namespace: cloudcart
+data:
+  PORT: "8002"
+  SERVICE_NAME: "user-service"
+  AWS_REGION: "us-east-1"
+  USERS_TABLE: "cloudcart-users-dev"

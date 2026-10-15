@@ -1,0 +1,192 @@
+services:
+  # ----------------------------------------------------
+  # Infrastructure: PostgreSQL Database (RDS Simulation)
+  # ----------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: cloudcart-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: cloudcart
+      POSTGRES_USER: cloudcart_user
+      POSTGRES_PASSWORD: cloudcart_password
+    volumes:
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql:ro
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cloudcart_user -d cloudcart"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------
+  # Infrastructure: LocalStack (DynamoDB, SNS, SQS)
+  # ----------------------------------------------------
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: cloudcart-localstack
+    restart: unless-stopped
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=dynamodb,sns,sqs
+      - AWS_DEFAULT_REGION=us-east-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./scripts/init-localstack.sh:/etc/localstack/init/ready.d/init-localstack.sh:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------
+  # Microservice 1: Product Service
+  # ----------------------------------------------------
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: cloudcart-product-service
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    environment:
+      PORT: 8001
+      SERVICE_NAME: product-service
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cloudcart
+      DB_USER: cloudcart_user
+      DB_PASSWORD: cloudcart_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ----------------------------------------------------
+  # Microservice 2: User Service
+  # ----------------------------------------------------
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: cloudcart-user-service
+    restart: unless-stopped
+    ports:
+      - "8002:8002"
+    environment:
+      PORT: 8002
+      SERVICE_NAME: user-service
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      DYNAMODB_ENDPOINT: http://localstack:4566
+      USERS_TABLE: cloudcart-users
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+  # ----------------------------------------------------
+  # Microservice 3: Order Service
+  # ----------------------------------------------------
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: cloudcart-order-service
+    restart: unless-stopped
+    ports:
+      - "8003:8003"
+    environment:
+      PORT: 8003
+      SERVICE_NAME: order-service
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cloudcart
+      DB_USER: cloudcart_user
+      DB_PASSWORD: cloudcart_password
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      SNS_ENDPOINT: http://localstack:4566
+      ORDER_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:cloudcart-order-events
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+
+  # ----------------------------------------------------
+  # Microservice 4: Inventory Service
+  # ----------------------------------------------------
+  inventory-service:
+    build:
+      context: ./services/inventory-service
+      dockerfile: Dockerfile
+    container_name: cloudcart-inventory-service
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    environment:
+      PORT: 8004
+      SERVICE_NAME: inventory-service
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: cloudcart
+      DB_USER: cloudcart_user
+      DB_PASSWORD: cloudcart_password
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      SQS_ENDPOINT: http://localstack:4566
+      INVENTORY_QUEUE_URL: http://localstack:4566/000000000000/cloudcart-inventory-queue
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+
+  # ----------------------------------------------------
+  # Microservice 5: Notification Service
+  # ----------------------------------------------------
+  notification-service:
+    build:
+      context: ./services/notification-service
+      dockerfile: Dockerfile
+    container_name: cloudcart-notification-service
+    restart: unless-stopped
+    ports:
+      - "8005:8005"
+    environment:
+      PORT: 8005
+      SERVICE_NAME: notification-service
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      SQS_ENDPOINT: http://localstack:4566
+      NOTIFICATION_QUEUE_URL: http://localstack:4566/000000000000/cloudcart-notification-queue
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+  # ----------------------------------------------------
+  # Frontend Web UI
+  # ----------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: cloudcart-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    depends_on:
+      - product-service
+      - user-service
+      - order-service
+
+volumes:
+  postgres-data:

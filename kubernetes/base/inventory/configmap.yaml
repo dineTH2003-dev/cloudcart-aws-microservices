@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-service-config
+  namespace: cloudcart
+data:
+  PORT: "8004"
+  SERVICE_NAME: "inventory-service"
+  DB_PORT: "5432"
+  DB_NAME: "cloudcart"
+  DB_USER: "cloudcart_user"
+  AWS_REGION: "us-east-1"
+  INVENTORY_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/123456789012/cloudcart-inventory-queue-dev"
