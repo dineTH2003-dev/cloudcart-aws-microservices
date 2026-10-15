@@ -184,6 +184,8 @@ resource "aws_iam_role_policy" "alb_controller_policy" {
   name   = "${var.cluster_name}-alb-controller-policy"
   role   = aws_iam_role.alb_controller.id
   policy = file("${path.module}/alb_iam_policy.json")
+}
+
 # Launch Template ensuring IMDSv2 hop limit = 2 for container pods
 resource "aws_launch_template" "eks_nodes" {
   name_prefix = "${var.cluster_name}-node-template-"

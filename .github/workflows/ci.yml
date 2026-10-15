@@ -18,6 +18,7 @@ jobs:
           - order-service
           - inventory-service
           - notification-service
+          - payment-service
 
     steps:
       - name: Checkout Source Code
@@ -57,6 +58,7 @@ jobs:
           - order-service
           - inventory-service
           - notification-service
+          - payment-service
 
     steps:
       - name: Checkout Source Code

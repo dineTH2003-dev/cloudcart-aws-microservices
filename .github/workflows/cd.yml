@@ -35,6 +35,9 @@ jobs:
           - name: notification-service
             path: services/notification-service
             repo: cloudcart/notification-service
+          - name: payment-service
+            path: services/payment-service
+            repo: cloudcart/payment-service
           - name: frontend
             path: frontend
             repo: cloudcart/frontend
@@ -61,10 +64,17 @@ jobs:
 
       - name: Build, Tag, and Push Image to ECR
         run: |
-          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ matrix.repo }}:${{ steps.vars.outputs.IMAGE_TAG }}"
+          REGISTRY="${{ steps.login-ecr.outputs.registry }}"
+          if [ -n "$REGISTRY" ]; then
+            IMAGE_URI="${REGISTRY}/${{ matrix.repo }}:${{ steps.vars.outputs.IMAGE_TAG }}"
+          else
+            IMAGE_URI="${{ matrix.repo }}:${{ steps.vars.outputs.IMAGE_TAG }}"
+          fi
+
           echo "Building $IMAGE_URI..."
           docker build -t "$IMAGE_URI" -t "${{ matrix.repo }}:latest" "./${{ matrix.path }}"
-          if [ "${{ steps.login-ecr.outcome }}" == "success" ]; then
+
+          if [ "${{ steps.login-ecr.outcome }}" == "success" ] && [ -n "$REGISTRY" ]; then
             docker push "$IMAGE_URI"
             echo "Successfully pushed $IMAGE_URI to ECR"
           else

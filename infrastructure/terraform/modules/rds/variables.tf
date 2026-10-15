@@ -26,17 +26,17 @@ variable "eks_nodes_security_group_id" {
 }
 
 variable "db_name" {
-  type        = string
-  default     = "cloudcart"
+  type    = string
+  default = "cloudcart"
 }
 
 variable "db_username" {
-  type        = string
-  default     = "cloudcart_admin"
+  type    = string
+  default = "cloudcart_admin"
 }
 
 variable "db_password" {
-  type        = string
-  sensitive   = true
-  default     = "CloudCartSecure2026!"
+  type      = string
+  sensitive = true
+  default   = "CloudCartSecure2026!"
 }
