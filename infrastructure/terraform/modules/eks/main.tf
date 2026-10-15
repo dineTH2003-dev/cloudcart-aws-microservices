@@ -123,6 +123,7 @@ resource "aws_eks_node_group" "main" {
 
   instance_types = var.node_instance_types
   capacity_type  = "ON_DEMAND"
+  ami_type       = "AL2023_x86_64_STANDARD"
 
   update_config {
     max_unavailable = 1
