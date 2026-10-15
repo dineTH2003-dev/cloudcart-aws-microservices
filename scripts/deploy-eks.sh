@@ -37,26 +37,26 @@ mkdir -p "$DOCKER_CONFIG_DIR"
 echo '{}' > "$DOCKER_CONFIG_DIR/config.json"
 aws ecr get-login-password --profile "$AWS_PROFILE" --region "$AWS_REGION" | docker --config "$DOCKER_CONFIG_DIR" login --username AWS --password-stdin "$ECR_REGISTRY"
 
-# 4. Tag and Push Container Images to ECR
-echo -e "\n${YELLOW}[Step 3/4] Tagging and pushing images to ECR...${NC}"
+# 4. Build, Tag and Push Container Images to ECR
+echo -e "\n${YELLOW}[Step 3/4] Building and pushing images to ECR...${NC}"
 SERVICES=(
-  "product-service:cloudcart/product-service"
-  "user-service:cloudcart/user-service"
-  "order-service:cloudcart/order-service"
-  "inventory-service:cloudcart/inventory-service"
-  "notification-service:cloudcart/notification-service"
+  "services/product-service:cloudcart/product-service"
+  "services/user-service:cloudcart/user-service"
+  "services/order-service:cloudcart/order-service"
+  "services/inventory-service:cloudcart/inventory-service"
+  "services/notification-service:cloudcart/notification-service"
+  "services/payment-service:cloudcart/payment-service"
   "frontend:cloudcart/frontend"
 )
 
 for entry in "${SERVICES[@]}"; do
-  local_name="${entry%%:*}"
+  context_dir="${entry%%:*}"
   ecr_repo="${entry##*:}"
-  
-  local_tag="cloudcart-aws-microservices-${local_name}:latest"
   remote_tag="${ECR_REGISTRY}/${ecr_repo}:latest"
   
-  echo "Pushing $local_tag -> $remote_tag"
-  docker tag "$local_tag" "$remote_tag"
+  echo -e "\n${BLUE}>>> Building $context_dir...${NC}"
+  docker build -t "$remote_tag" "$context_dir"
+  echo ">>> Pushing $remote_tag..."
   docker --config "$DOCKER_CONFIG_DIR" push "$remote_tag"
 done
 

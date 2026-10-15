@@ -27,3 +27,34 @@ resource "aws_dynamodb_table" "users" {
     Environment = var.environment
   }
 }
+
+# ShopSphere Payments Table (Phase 3 upgrade)
+resource "aws_dynamodb_table" "payments" {
+  name         = "shopsphere-payments-${var.environment}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "PK"
+  range_key    = "SK"
+
+  attribute {
+    name = "PK"
+    type = "S"
+  }
+
+  attribute {
+    name = "SK"
+    type = "S"
+  }
+
+  point_in_time_recovery {
+    enabled = true
+  }
+
+  server_side_encryption {
+    enabled = true
+  }
+
+  tags = {
+    Name        = "shopsphere-payments-${var.environment}"
+    Environment = var.environment
+  }
+}

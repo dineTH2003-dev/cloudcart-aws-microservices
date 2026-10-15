@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: shopsphere-rds-seed
+  namespace: cloudcart
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-seed
+          image: postgres:16-alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              echo "Connecting to PostgreSQL at $PGHOST:$PGPORT as $PGUSER to seed ShopSphere products..."
+              export PGPASSWORD="$DB_PASSWORD"
+              psql -h "$PGHOST" -p "$PGPORT" -U "$PGUSER" -d "$PGDATABASE" -f /sql/init-db.sql
+              echo "✓ Database seeded successfully!"
+          env:
+            - name: PGHOST
+              value: "cloudcart-postgres-dev.cw7ksi4oaeod.us-east-1.rds.amazonaws.com"
+            - name: PGPORT
+              value: "5432"
+            - name: PGDATABASE
+              value: "cloudcart"
+            - name: PGUSER
+              value: "cloudcart_admin"
+            - name: DB_PASSWORD
+              value: "ReplaceWithSecurePassword2026!"
+            - name: PGSSLMODE
+              value: "require"
+          volumeMounts:
+            - name: sql-script
+              mountPath: /sql
+      volumes:
+        - name: sql-script
+          configMap:
+            name: shopsphere-init-sql

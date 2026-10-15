@@ -115,17 +115,19 @@ resource "aws_iam_role_policy" "node_app_permissions" {
     Statement = [
       {
         Effect = "Allow"
-        Action = [
-          "dynamodb:*"
+        Action = ["dynamodb:*"]
+        Resource = [
+          "arn:aws:dynamodb:*:*:table/cloudcart-*",
+          "arn:aws:dynamodb:*:*:table/shopsphere-*"
         ]
-        Resource = "arn:aws:dynamodb:*:*:table/cloudcart-*"
       },
       {
         Effect = "Allow"
-        Action = [
-          "sns:Publish"
+        Action = ["sns:Publish"]
+        Resource = [
+          "arn:aws:sns:*:*:cloudcart-*",
+          "arn:aws:sns:*:*:shopsphere-*"
         ]
-        Resource = "arn:aws:sns:*:*:cloudcart-*"
       },
       {
         Effect = "Allow"
@@ -135,12 +137,53 @@ resource "aws_iam_role_policy" "node_app_permissions" {
           "sqs:GetQueueAttributes",
           "sqs:SendMessage"
         ]
-        Resource = "arn:aws:sqs:*:*:cloudcart-*"
+        Resource = [
+          "arn:aws:sqs:*:*:cloudcart-*",
+          "arn:aws:sqs:*:*:shopsphere-*"
+        ]
       }
     ]
   })
 }
 
+# ===================================================================
+# IRSA: IAM Role for AWS Load Balancer Controller
+# ===================================================================
+data "aws_iam_policy_document" "alb_controller_assume" {
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.oidc.arn]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.oidc.url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(aws_iam_openid_connect_provider.oidc.url, "https://", "")}:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "alb_controller" {
+  name               = "${var.cluster_name}-alb-controller-role"
+  assume_role_policy = data.aws_iam_policy_document.alb_controller_assume.json
+
+  tags = {
+    Name        = "${var.cluster_name}-alb-controller-role"
+    Environment = var.environment
+  }
+}
+
+resource "aws_iam_role_policy" "alb_controller_policy" {
+  name   = "${var.cluster_name}-alb-controller-policy"
+  role   = aws_iam_role.alb_controller.id
+  policy = file("${path.module}/alb_iam_policy.json")
 # Launch Template ensuring IMDSv2 hop limit = 2 for container pods
 resource "aws_launch_template" "eks_nodes" {
   name_prefix = "${var.cluster_name}-node-template-"

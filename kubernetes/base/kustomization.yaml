@@ -29,6 +29,11 @@ resources:
   - notification/configmap.yaml
   - notification/service.yaml
   - notification/deployment.yaml
+  # Payment Service (ShopSphere Phase 3)
+  - payment/configmap.yaml
+  - payment/service.yaml
+  - payment/deployment.yaml
+  - payment/hpa.yaml
   # Frontend
   - frontend/service.yaml
   - frontend/deployment.yaml
@@ -48,6 +53,9 @@ images:
     newTag: latest
   - name: cloudcart/notification-service
     newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/notification-service
+    newTag: latest
+  - name: cloudcart/payment-service
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/payment-service
     newTag: latest
   - name: cloudcart/frontend
     newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/frontend

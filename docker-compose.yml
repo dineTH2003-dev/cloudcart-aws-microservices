@@ -173,6 +173,31 @@ services:
         condition: service_healthy
 
   # ----------------------------------------------------
+  # Microservice 6: Payment Service (ShopSphere Upgrade)
+  # ----------------------------------------------------
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    container_name: cloudcart-payment-service
+    restart: unless-stopped
+    ports:
+      - "8006:8006"
+    environment:
+      PORT: 8006
+      SERVICE_NAME: payment-service
+      AWS_REGION: us-east-1
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      DYNAMODB_ENDPOINT: http://localstack:4566
+      PAYMENTS_TABLE: shopsphere-payments
+      SNS_ENDPOINT: http://localstack:4566
+      PAYMENT_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:shopsphere-payment-events
+    depends_on:
+      localstack:
+        condition: service_healthy
+
+  # ----------------------------------------------------
   # Frontend Web UI
   # ----------------------------------------------------
   frontend:
@@ -187,6 +212,7 @@ services:
       - product-service
       - user-service
       - order-service
+      - payment-service
 
 volumes:
   postgres-data:

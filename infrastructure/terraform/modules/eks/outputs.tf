@@ -27,3 +27,8 @@ output "oidc_issuer" {
   description = "OIDC Issuer URL of the EKS cluster"
   value       = aws_eks_cluster.main.identity[0].oidc[0].issuer
 }
+
+output "alb_controller_role_arn" {
+  description = "IAM Role ARN for the AWS Load Balancer Controller (IRSA)"
+  value       = aws_iam_role.alb_controller.arn
+}

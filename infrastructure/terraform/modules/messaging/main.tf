@@ -125,3 +125,15 @@ resource "aws_sns_topic_subscription" "notification_sub" {
   protocol  = "sqs"
   endpoint  = aws_sqs_queue.notification_queue.arn
 }
+
+# ===================================================================
+# ShopSphere Payment Events SNS Topic (Phase 3 upgrade)
+# ===================================================================
+resource "aws_sns_topic" "payment_events" {
+  name = "shopsphere-payment-events-${var.environment}"
+
+  tags = {
+    Name        = "shopsphere-payment-events-${var.environment}"
+    Environment = var.environment
+  }
+}

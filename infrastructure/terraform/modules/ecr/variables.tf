@@ -7,6 +7,7 @@ variable "repository_names" {
     "cloudcart/order-service",
     "cloudcart/inventory-service",
     "cloudcart/notification-service",
+    "cloudcart/payment-service",
     "cloudcart/frontend"
   ]
 }

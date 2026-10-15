@@ -30,8 +30,10 @@ kubectl port-forward -n cloudcart svc/inventory-service 8004:8004 > /dev/null 2>
 PID_INV=$!
 kubectl port-forward -n cloudcart svc/notification-service 8005:8005 > /dev/null 2>&1 &
 PID_NOTIF=$!
+kubectl port-forward -n cloudcart svc/payment-service 8006:8006 > /dev/null 2>&1 &
+PID_PAY=$!
 
-trap "echo -e '\nStopping EKS port-forwards...'; kill $PID_FE $PID_PROD $PID_USER $PID_ORDER $PID_INV $PID_NOTIF 2>/dev/null || true; exit 0" SIGINT SIGTERM EXIT
+trap "echo -e '\nStopping EKS port-forwards...'; kill $PID_FE $PID_PROD $PID_USER $PID_ORDER $PID_INV $PID_NOTIF $PID_PAY 2>/dev/null || true; exit 0" SIGINT SIGTERM EXIT
 
 echo -e "\n${GREEN}======================================================${NC}"
 echo -e "${GREEN}  ✓ Connected to Live Amazon EKS (account2: 265283365424)! ${NC}"
@@ -41,6 +43,7 @@ echo -e "• Frontend:     http://localhost:3001 (React Web App on EKS)"
 echo -e "• Products:     http://localhost:8001/api/products (RDS PostgreSQL)"
 echo -e "• Users:        http://localhost:8002/api/users (DynamoDB)"
 echo -e "• Orders:       http://localhost:8003/api/orders (SNS Publisher)"
+echo -e "• Payments:     http://localhost:8006/healthz (DynamoDB + SNS)"
 echo -e "• Inventory:    http://localhost:8004/healthz (SQS Consumer)"
 echo -e "• Notification: http://localhost:8005/healthz (SQS Consumer)"
 echo -e "\nPress [Ctrl+C] in this terminal when finished to disconnect."

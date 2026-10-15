@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-service-config
+  namespace: cloudcart
+data:
+  PAYMENTS_TABLE: "shopsphere-payments-dev"
+  PAYMENT_TOPIC_ARN: "arn:aws:sns:us-east-1:265283365424:shopsphere-payment-events-dev"
