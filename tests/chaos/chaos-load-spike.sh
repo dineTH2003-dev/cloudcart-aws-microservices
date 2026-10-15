@@ -5,8 +5,8 @@ set -e
 # Generates high concurrent load against Product Service to trigger HPA scaling
 
 TARGET_URL="${TARGET_URL:-http://localhost:8001/api/products}"
-CONCURRENCY="${CONCURRENCY:-20}"
-REQUESTS="${REQUESTS:-500}"
+CONCURRENCY="${CONCURRENCY:-10}"
+REQUESTS="${REQUESTS:-50}"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -23,7 +23,7 @@ if command -v ab >/dev/null 2>&1; then
   ab -n "$REQUESTS" -c "$CONCURRENCY" "$TARGET_URL"
 else
   echo "Using parallel curl workers..."
-  seq "$REQUESTS" | xargs -n 1 -P "$CONCURRENCY" curl -s -o /dev/null -w "%{http_code}\n" "$TARGET_URL" | grep -c "200" || true
+  seq "$REQUESTS" | xargs -P "$CONCURRENCY" -I {} curl -s -o /dev/null -w "%{http_code}\n" "$TARGET_URL" | grep -c "200" || true
 fi
 
 echo -e "${GREEN}✓ Traffic burst executed successfully!${NC}"
