@@ -13,7 +13,8 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
+  profile = "account2"
 
   default_tags {
     tags = {
@@ -65,10 +66,11 @@ module "messaging" {
 
 # 6. Amazon EKS Cluster & Managed Node Group
 module "eks" {
-  source             = "../../modules/eks"
-  cluster_name       = "${var.name_prefix}-eks-${var.environment}"
-  environment        = var.environment
-  vpc_id             = module.vpc.vpc_id
-  private_subnet_ids = module.vpc.private_subnet_ids
-  public_subnet_ids  = module.vpc.public_subnet_ids
+  source              = "../../modules/eks"
+  cluster_name        = "${var.name_prefix}-eks-${var.environment}"
+  environment         = var.environment
+  vpc_id              = module.vpc.vpc_id
+  private_subnet_ids  = module.vpc.private_subnet_ids
+  public_subnet_ids   = module.vpc.public_subnet_ids
+  node_instance_types = ["t3.small"]
 }

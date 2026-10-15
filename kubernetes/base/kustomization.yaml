@@ -32,3 +32,23 @@ resources:
   # Frontend
   - frontend/service.yaml
   - frontend/deployment.yaml
+
+images:
+  - name: cloudcart/product-service
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/product-service
+    newTag: latest
+  - name: cloudcart/user-service
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/user-service
+    newTag: latest
+  - name: cloudcart/order-service
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/order-service
+    newTag: latest
+  - name: cloudcart/inventory-service
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/inventory-service
+    newTag: latest
+  - name: cloudcart/notification-service
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/notification-service
+    newTag: latest
+  - name: cloudcart/frontend
+    newName: 265283365424.dkr.ecr.us-east-1.amazonaws.com/cloudcart/frontend
+    newTag: latest

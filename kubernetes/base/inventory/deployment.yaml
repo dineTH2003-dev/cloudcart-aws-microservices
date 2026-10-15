@@ -19,7 +19,7 @@ spec:
       containers:
         - name: inventory-service
           image: cloudcart/inventory-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8004
               name: http
@@ -28,9 +28,9 @@ spec:
                 name: inventory-service-config
           env:
             - name: DB_HOST
-              value: "cloudcart-postgres.internal"
+              value: "cloudcart-postgres-dev.cw7ksi4oaeod.us-east-1.rds.amazonaws.com"
             - name: DB_PASSWORD
-              value: "cloudcart_password"
+              value: "ReplaceWithSecurePassword2026!"
           resources:
             requests:
               cpu: 100m

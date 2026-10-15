@@ -19,7 +19,7 @@ spec:
       containers:
         - name: order-service
           image: cloudcart/order-service:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8003
               name: http
@@ -28,9 +28,9 @@ spec:
                 name: order-service-config
           env:
             - name: DB_HOST
-              value: "cloudcart-postgres.internal"
+              value: "cloudcart-postgres-dev.cw7ksi4oaeod.us-east-1.rds.amazonaws.com"
             - name: DB_PASSWORD
-              value: "cloudcart_password"
+              value: "ReplaceWithSecurePassword2026!"
           resources:
             requests:
               cpu: 100m

@@ -106,6 +106,41 @@ resource "aws_iam_role_policy_attachment" "node_AmazonEC2ContainerRegistryReadOn
   role       = aws_iam_role.node.name
 }
 
+resource "aws_iam_role_policy" "node_app_permissions" {
+  name = "${var.cluster_name}-node-app-policy"
+  role = aws_iam_role.node.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:*"
+        ]
+        Resource = "arn:aws:dynamodb:*:*:table/cloudcart-*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sns:Publish"
+        ]
+        Resource = "arn:aws:sns:*:*:cloudcart-*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:SendMessage"
+        ]
+        Resource = "arn:aws:sqs:*:*:cloudcart-*"
+      }
+    ]
+  })
+}
+
 # ===================================================================
 # EKS Managed Node Group (Deployed into Private Application Subnets)
 # ===================================================================

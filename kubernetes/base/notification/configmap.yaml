@@ -7,4 +7,4 @@ data:
   PORT: "8005"
   SERVICE_NAME: "notification-service"
   AWS_REGION: "us-east-1"
-  NOTIFICATION_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/123456789012/cloudcart-notification-queue-dev"
+  NOTIFICATION_QUEUE_URL: "https://sqs.us-east-1.amazonaws.com/265283365424/cloudcart-notification-queue-dev"
